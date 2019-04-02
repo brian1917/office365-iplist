@@ -20,5 +20,6 @@ Usage of office365-iplist:
        API key if using API user or password if using email address. Required.
 -name  string
        Name of the IPList to be created or updated. (default Office365)
+-p     Provision the IP List.
 -x     Disable TLS checking.
 ```
