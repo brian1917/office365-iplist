@@ -72,39 +72,11 @@ func main() {
 		log.Fatalf("ERROR - Required arguments not included. Run -h for usgae.")
 	}
 
-	userStr := *user
-	var org int
-
-	// If the user string begins with "api_", we need to get the Org using the login api
-	if userStr[:4] == "api_" {
-		login, _, err := illumioapi.Login(illumioapi.PCE{FQDN: *fqdn, User: *user, Key: *pwd, Port: *port}, "")
-		if err != nil {
-			log.Fatalf("Error - Logging in to PCE to get org ID - %s", err)
-		}
-		org = login.Orgs[0].ID
-		// If it doesn't start with "api_", we need to authenticate and then login
-	} else {
-		auth, _, err := illumioapi.Authenticate(illumioapi.PCE{FQDN: *fqdn, Port: *port, DisableTLSChecking: *disableTLS}, *user, *pwd)
-		if err != nil {
-			log.Fatalf("Error - Authenticating to PCE - %s", err)
-		}
-		login, _, err := illumioapi.Login(illumioapi.PCE{FQDN: *fqdn, Port: *port, DisableTLSChecking: *disableTLS}, auth.AuthToken)
-		if err != nil {
-			log.Fatalf("Error - Logging in to PCE - %s", err)
-		}
-		user = &login.AuthUsername
-		pwd = &login.SessionToken
-		org = login.Orgs[0].ID
+	// Build the PCE from user input
+	pce, err := illumioapi.PCEbuilder(*fqdn, *user, *pwd, *port, *disableTLS)
+	if err != nil {
+		log.Fatalf("Error building PCE - %s", err)
 	}
-
-	// Create the PCE
-	pce := illumioapi.PCE{
-		FQDN:               *fqdn,
-		Port:               *port,
-		Org:                org,
-		User:               *user,
-		Key:                *pwd,
-		DisableTLSChecking: *disableTLS}
 
 	// Get the IP information from Microsoft
 	var msendpoints []msendpoint
